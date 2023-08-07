@@ -1,5 +1,6 @@
 package com.example.tradingapp.controller;
 
+import com.example.tradingapp.exception.ProcessorException;
 import com.example.tradingapp.exception.RepositoryException;
 import com.example.tradingapp.thirdparty.SignalHandler;
 import org.junit.jupiter.api.Test;
@@ -39,5 +40,14 @@ public class SignalControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Signal 6 does not exist"));
         verify(signalHandler, times(1)).handleSignal(6);
+    }
+
+    @Test
+    public void wrongSignalSpecTest() throws Exception {
+        doThrow(new ProcessorException("Wrong format of parameters")).when(signalHandler).handleSignal(1);
+        mockMvc.perform(get("/signal/1"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string("Internal error. Try again later."));
+        verify(signalHandler, times(1)).handleSignal(1);
     }
 }
